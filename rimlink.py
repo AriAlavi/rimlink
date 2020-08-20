@@ -90,7 +90,7 @@ class AppDataStructure(HashStructure):
         else:
             return self.app_data_path
 
-FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log"]
+FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git"]
 def generateStructure(relativePositionStart, parent=None, **kwargs):
     app_data = kwargs.get("app_data", False)
     if app_data:

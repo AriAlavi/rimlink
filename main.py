@@ -68,14 +68,19 @@ def recievePickles(socket, BYE_SIZE=1024):
     return pickle.loads(b"".join(data_blocks))
 
 def clientSyncFiles(to_delete, to_add, to_modify):
-    for file in to_modify:
-        to_add.append(file)
-        to_delete.append(file)
+    to_delete.extend(to_modify)
+    to_add.extend(to_modify)
     del to_modify
     folders = []
     for delete in to_delete:
         if delete.children:
             folders.append(delete)
+        else:
+            os.remove(delete.relativePath())
+    folders.sort(reverse=True, key=lambda x: x.relativePath().count("\\"))
+    for folder in folders:
+        os.rmdir(folder.relativePath())
+
     folders = []
     for add in to_add:
         if add.children:
@@ -85,27 +90,30 @@ def clientSyncFiles(to_delete, to_add, to_modify):
         to_add.remove(folder)
         os.mkdir(folder.relativePath())
 
-
+    i = 0
     for file_name in to_add:
         s = socket.socket()
         s.connect((IP_ADDRESS, PORT))
         Server.clientRecieveFile(s, file_name.relativePath())
         s.close()
+        i += 1
+        if i % 100:
+            print("{} files downloaded...".format(i))
     print("Done syncing files")
     # Server.clientSendString(s, to_add)
 
 def automaticSync(packets):
     print()
-    print("To delete:", ",".join([x.relativePath() for x in packets['delete']]))
-    print("To add:", ",".join([x.relativePath() for x in packets['add']]))
-    print("To replace:", ",".join([x.relativePath() for x in packets['modify']]))
+    print("To delete:", ", ".join([x.relativePath() for x in packets['delete']]))
+    print("To add:", ", ".join([x.relativePath() for x in packets['add']]))
+    print("To replace:", ", ".join(["'" + x.relativePath() + "'" for x in packets['modify']]))
     files_to_modify = len(packets['delete']) + len(packets['add']) + len(packets['modify'])
     print("{} files to modify".format(files_to_modify))
     print()
     if files_to_modify == 0:
         return False
     automayic_sync = menu("Do you want to proceed? \n(y)es\n(n)o", yesNoValidator)
-    if automaticSync == "y":
+    if automayic_sync == "y":
         return True
     return False
 
@@ -224,7 +232,7 @@ class Server:
         differences = compareStructures(self.base_structure, other_structure)
         pickled_differences = pickle.dumps(differences)
         await self.sendPickle(pickled_differences, w)
-        print("Rimworld differences found for {}".format(w.get_extra_info("peername")))
+        print("Seeking rimworld differences for {}".format(w.get_extra_info("peername")))
 
     async def recieveData(self, r):
         data_length_in_bytes = await r.read(8)
@@ -258,18 +266,21 @@ class Server:
         differences = compareStructures(self.base_app_data_structure, other_structure)
         pickled_differences = pickle.dumps(differences)
         await self.sendPickle(pickled_differences, w)
-        print("Config differences found for {}".format(w.get_extra_info("peername")))
+        print("Seeking config differences for {}".format(w.get_extra_info("peername")))
     async def _handle_client(self, r, w):
         assert isinstance(r, asyncio.StreamReader)
         assert isinstance(w, asyncio.StreamWriter)
-        print("Connection recieved from {}".format(w.get_extra_info("peername")))
+        # print("Connection recieved from {}".format(w.get_extra_info("peername")))
         BYTE_MAP = {
             b"\x00" : self.comparison,
             b"\x01" : self.sendFile,
             b"\x02" : self.configComparison,
         }
-        what_you_want = await r.read(1)
-        await BYTE_MAP[what_you_want](r, w)
+        try:
+            what_you_want = await r.read(1)
+            await BYTE_MAP[what_you_want](r, w)
+        except ConnectionResetError:
+            pass
 
     async def run(self):
         print("Analyzing rimworld...")
