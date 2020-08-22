@@ -26,6 +26,10 @@ class FileFolder:
         assert parent is None or isinstance(parent, FileFolder)
         self.name = name
         self.parent = None
+        if os.path.isfile(name):
+            self.file = True
+        else:
+            self.file = False
         self.children = []
         if parent:
             parent.setChild(self)

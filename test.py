@@ -161,7 +161,27 @@ class StructureComparisonTest(unittest.TestCase):
         self.maxDiff = None
         self.assertEqual([x.relativePath() for x in results['add']], [add, add_inner])  
 
+class IsFileTest(unittest.TestCase):
+    def test_is_file(self):
+        self.assertTrue(FileFolder("test_files\\dll_case.dll").file)
+        self.assertTrue(FileFolder("test_files\\exe_case.exe").file)
+        self.assertTrue(FileFolder("test_files\\text_case.txt").file)
+        self.assertTrue(FileFolder("test_files\\RimworldBase\\hi.txt").file)
+        
+    def test_is_not_file(self):
+        self.assertFalse(FileFolder("test_files").file)
+        self.assertFalse(FileFolder("test_files\\RimworldBase").file)
+        self.assertFalse(FileFolder("test_files\\RimworldBase\\Interior").file)
+        self.assertFalse(FileFolder("test_files\\RimworldBase\\empty").file)
 
-
+    def test_file_indirect(self):
+        config_location = getRimworldConfigArea()
+        parent = generateStructure(config_location, app_data=config_location)
+        self.assertFalse(parent.file)
+        for child in parent.children:
+            if "Config" in child.name:
+                self.assertFalse(child.file)
+            elif "Player.log" in child.name:
+                self.assertTrue(child.file)
 if __name__ == '__main__':
     unittest.main()

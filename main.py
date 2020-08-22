@@ -7,6 +7,7 @@ import os
 import time
 import pickle
 import socket
+from shutil import rmtree
 
 from rimlink import generateStructure, compareStructures, getRimworldConfigArea, isAdmin
 
@@ -73,17 +74,17 @@ def clientSyncFiles(to_delete, to_add, to_modify):
     del to_modify
     folders = []
     for delete in to_delete:
-        if delete.children:
+        if not delete.file:
             folders.append(delete)
         else:
             os.remove(delete.relativePath())
     folders.sort(reverse=True, key=lambda x: x.relativePath().count("\\"))
     for folder in folders:
-        os.rmdir(folder.relativePath())
+        rmtree(folder.relativePath())
 
     folders = []
     for add in to_add:
-        if add.children:
+        if not add.file:
             folders.append(add)
     folders.sort(key=lambda x: x.relativePath().count("\\"))
     for folder in folders:
