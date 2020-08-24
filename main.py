@@ -296,14 +296,14 @@ def main():
         print("You must put this file into the top directory of the rimworld folder")
         time.sleep(3)
         return
+    if not isAdmin():
+        print("You must run in administrator mode")
+        hangForever()
     host = menu("Are you hosting the rimworld server?\n(y)es\n(n)o", yesNoValidator)
     if host == "y":
         ip_prompt = "your"
     else:
         ip_prompt ="the host's"
-        if "Program Files" in os.getcwd() and not isAdmin():
-            print("You must run in administrator mode")
-            hangForever()
     IP_ADDRESS = menu("Please copy {} ip address into your clipboard and press enter".format(ip_prompt), validateIP, True)
     if host == "y":
         return server()
