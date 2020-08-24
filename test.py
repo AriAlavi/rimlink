@@ -72,6 +72,14 @@ class StructureGenerationTest(unittest.TestCase):
         parent = generateStructure(FILE_LOCATION)
         self.assertEqual(len(parent.children), 1)
         self.assertTrue(parent.children[0].file)
+    def test_non_ascii_folder(self):
+        FILE_LOCATION = "test_files/NonAsciiFileTest/"
+        parent = generateStructure(FILE_LOCATION)
+        self.assertEqual(len(parent.children), 1)
+        Spanish = parent.children[0]
+        self.assertFalse(Spanish.file)
+        self.assertEqual(len(Spanish.children), 2)
+        
 
 class StructureComparisonTest(unittest.TestCase):
     FILE_LOCATION = "test_files/"
