@@ -70,6 +70,7 @@ def clientSyncFiles(to_delete, to_add, to_modify):
             os.remove(delete.relativePath())
     folders.sort(reverse=True, key=lambda x: x.relativePath().count("\\"))
     for folder in folders:
+        print("folder", folder)
         rmtree(folder.relativePath())
 
     folders = []
@@ -88,7 +89,7 @@ def clientSyncFiles(to_delete, to_add, to_modify):
         Server.clientRecieveFile(s, file_name.relativePath())
         s.close()
         i += 1
-        if i % 100:
+        if i % 100 == 0:
             print("{} files downloaded...".format(i))
     print("Done syncing files")
     # Server.clientSendString(s, to_add)
