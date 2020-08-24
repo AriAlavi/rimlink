@@ -57,17 +57,6 @@ def hangForever():
     while True:
         time.sleep(120)
 
-
-def recievePickles(socket, BYE_SIZE=1024):
-    data_blocks = []
-    while True:
-        recieved_data = socket.recv(1024)
-        if recieved_data == b"":
-            break
-        else:
-            data_blocks.append(recieved_data)
-    return pickle.loads(b"".join(data_blocks))
-
 def clientSyncFiles(to_delete, to_add, to_modify):
     to_delete.extend(to_modify)
     to_add.extend(to_modify)
