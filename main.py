@@ -8,6 +8,7 @@ import time
 import pickle
 import socket
 from shutil import rmtree
+import traceback
 
 from rimlink import generateStructure, compareStructures, getRimworldConfigArea, isAdmin
 
@@ -310,4 +311,9 @@ def main():
         return client()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except:
+        traceback.print_exc()
+        print("Halting execution...")
+        hangForever()
