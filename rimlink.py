@@ -89,13 +89,13 @@ class AppDataStructure(HashStructure):
         self.app_data_path = kwargs['app_data']
         super(AppDataStructure, self).__init__(name, parent, **kwargs)
 
-    def relativePath(self):
+    def path(self):
         if self.parent:
-            return os.path.join(self.parent.relativePath(), self.name)
+            return os.path.join(self.parent.path(), self.name)
         else:
             return self.app_data_path
 
-FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git"]
+FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git", "rimlink.exe"]
 def generateStructure(relativePositionStart, parent=None, **kwargs):
     app_data = kwargs.get("app_data", False)
     if app_data:

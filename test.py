@@ -172,7 +172,15 @@ class StructureComparisonTest(unittest.TestCase):
         self.assertEqual(results['delete'], [])
         self.assertEqual(results['modify'], [])
         self.maxDiff = None
-        self.assertEqual([x.relativePath() for x in results['add']], [add, add_inner])  
+        self.assertEqual([x.path() for x in results['add']], [add, add_inner])  
+
+    def test_different_app_data(self):
+        APP_DATA_BASE = "test_files/FakeAppData1/"
+        APP_DATA_DIFFERENT = "test_files/FakeAppData2/"
+        base_structure = generateStructure(APP_DATA_BASE, app_data=APP_DATA_BASE)
+        different_structure = generateStructure(APP_DATA_DIFFERENT, app_data=APP_DATA_DIFFERENT)
+        results = compareStructures(base_structure, different_structure)
+
 
 class IsFileTest(unittest.TestCase):
     def test_is_file(self):

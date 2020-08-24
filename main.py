@@ -67,28 +67,28 @@ def clientSyncFiles(to_delete, to_add, to_modify):
         if not delete.file:
             folders.append(delete)
         else:
-            os.remove(delete.relativePath())
-    folders.sort(reverse=True, key=lambda x: x.relativePath().count("\\"))
+            os.remove(delete.path())
+    folders.sort(reverse=True, key=lambda x: x.path().count("\\"))
     for folder in folders:
         try:
-            rmtree(folder.relativePath())
+            rmtree(folder.path())
         except:
-            print("Failed to delete {} for some reason".format(folder.relativePath()))
+            print("Failed to delete {} for some reason".format(folder.path()))
 
     folders = []
     for add in to_add:
         if not add.file:
             folders.append(add)
-    folders.sort(key=lambda x: x.relativePath().count("\\"))
+    folders.sort(key=lambda x: x.path().count("\\"))
     for folder in folders:
         to_add.remove(folder)
-        os.mkdir(folder.relativePath())
+        os.mkdir(folder.path())
 
     i = 0
     for file_name in to_add:
         s = socket.socket()
         s.connect((IP_ADDRESS, PORT))
-        Server.clientRecieveFile(s, file_name.relativePath())
+        Server.clientRecieveFile(s, file_name.path())
         s.close()
         i += 1
         if i % 100 == 0:
