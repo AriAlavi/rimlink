@@ -9,7 +9,7 @@ import socket
 from shutil import rmtree
 import traceback
 
-from rimlink import generateStructure, compareStructures, AppDataStructure, isAdmin
+from rimlink import generateStructure, compareStructures, AppDataStructure, isAdmin, FileFolder
 
 
 
@@ -86,18 +86,23 @@ def clientSyncFiles(to_delete, to_add, to_modify, **kwargs):
         os.mkdir(folder.path())
 
     i = 0
+    if testing:
+        tests = []
     for file_name in to_add:
         if testing:
+            tests.append(file_name)
             print("Downloaded {}".format(file_name))
             continue
         s = socket.socket()
         s.connect((IP_ADDRESS, PORT))
-        Server.clientRecieveFile(s, file_name.path())
+        Server.clientRecieveFile(s, file_name.relativePath())
         s.close()
         i += 1
         if i % 100 == 0:
             print("{} files downloaded...".format(i))
     print("Done syncing files")
+    if testing:
+        return tests
     # Server.clientSendString(s, to_add)
 
 def automaticSync(packets):
@@ -195,13 +200,15 @@ class Server:
         socket.send(encoded_string)
 
     @staticmethod
-    def clientRecieveFile(socket, filename):
+    def clientRecieveFile(socket, fileObj):
+        assert isinstance(fileObj, FileFolder)
         socket.send(b"\x01")
-        Server.clientSendString(socket, filename)
+        pickled_obj = pickle.dumps(fileObj)
+        Server.clientSendPickle(socket, pickled_obj)
         file_size_bytes = socket.recv(8)
         file_size = int.from_bytes(file_size_bytes, byteorder="big")
         bytes_recieved = 0
-        file = open(filename, "wb")
+        file = open(fileObj.path(), "wb")
         while bytes_recieved < file_size:
             current = socket.recv(1024)
             bytes_recieved += len(current)
@@ -246,8 +253,11 @@ class Server:
         return b"".join(chunks)
 
     async def sendFile(self, r, w):
-        file_name = await self.recieveData(r)
-        file_name = file_name.decode()
+        # file_name = await self.recieveData(r)
+        pickled_file = await self.recievePickle(r)
+        file_obj = pickle.loads(pickled_file)
+        assert isinstance(file_obj, FileFolder)
+        file_name = file_obj.path()
         file_obj = open(file_name, "rb")
         file_bytes = file_obj.read()
         file_size = os.stat(file_name).st_size

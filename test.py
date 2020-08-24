@@ -193,7 +193,8 @@ class StructureComparisonTest(unittest.TestCase):
         
         results = compareStructures(base_structure, different_structure)
         self.assertEqual(results['modify'][0].path(), 'test_files/FakeAppData2/different.txt')
-        clientSyncFiles(results['delete'], results['add'], results['modify'], testing=True)
+        to_download = clientSyncFiles(results['delete'], results['add'], results['modify'], testing=True)
+        self.assertEqual(to_download[0].relativePath(), "different.txt")
 
 
 class IsFileTest(unittest.TestCase):
