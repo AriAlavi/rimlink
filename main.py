@@ -95,7 +95,7 @@ def clientSyncFiles(to_delete, to_add, to_modify, **kwargs):
             continue
         s = socket.socket()
         s.connect((IP_ADDRESS, PORT))
-        Server.clientRecieveFile(s, file_name.relativePath())
+        Server.clientRecieveFile(s, file_name)
         s.close()
         i += 1
         if i % 100 == 0:
