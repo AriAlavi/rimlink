@@ -254,8 +254,7 @@ class Server:
 
     async def sendFile(self, r, w):
         # file_name = await self.recieveData(r)
-        pickled_file = await self.recievePickle(r)
-        file_obj = pickle.loads(pickled_file)
+        file_obj = await self.recievePickle(r)
         assert isinstance(file_obj, FileFolder)
         file_name = file_obj.path()
         file_obj = open(file_name, "rb")
