@@ -67,6 +67,11 @@ class StructureGenerationTest(unittest.TestCase):
         baseHead = generateStructure(".")
         differentHead = generateStructure(FILE_LOCATION)
         self.assertNotEqual(baseHead.path(), differentHead.path())
+    def test_weird_file(self):
+        FILE_LOCATION = "test_files/WeirdFileTest/"
+        parent = generateStructure(FILE_LOCATION)
+        self.assertEqual(len(parent.children), 1)
+        self.assertTrue(parent.children[0].file)
 
 class StructureComparisonTest(unittest.TestCase):
     FILE_LOCATION = "test_files/"

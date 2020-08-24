@@ -294,8 +294,7 @@ def main():
     global IP_ADDRESS
     if not requireRimworldFolder():
         print("You must put this file into the top directory of the rimworld folder")
-        time.sleep(3)
-        return
+        hangForever()
     if not isAdmin():
         print("You must run in administrator mode")
         hangForever()

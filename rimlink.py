@@ -26,13 +26,14 @@ class FileFolder:
         assert parent is None or isinstance(parent, FileFolder)
         self.name = name
         self.parent = None
-        if os.path.isfile(name):
+        if parent:
+            parent.setChild(self)
+        if os.path.isfile(self.path()):
             self.file = True
         else:
             self.file = False
         self.children = []
-        if parent:
-            parent.setChild(self)
+
 
     def setChild(self, file):
         assert isinstance(file, FileFolder)
@@ -107,6 +108,9 @@ def generateStructure(relativePositionStart, parent=None, **kwargs):
     assert isinstance(parent, FileFolder)
     for file_name in os.listdir(relativePositionStart):
         if file_name in FILE_EXCEPTIONS:
+            continue
+        file_name_path = os.path.join(relativePositionStart, file_name)
+        if not(os.path.isfile(file_name_path) or os.path.isdir(file_name_path)):
             continue
         file_folder = StructureType(file_name, parent, app_data=app_data)
         if os.path.isdir(os.path.join(relativePositionStart, file_name)):
