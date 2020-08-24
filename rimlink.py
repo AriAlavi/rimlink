@@ -15,11 +15,6 @@ def isAdmin():
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
     return is_admin
 
-def getRimworldConfigArea():
-    roaming = os.getenv("APPDATA")
-    app_data = "\\".join(roaming.split("\\")[:-1])
-    return os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
-
 class FileFolder:
     def __init__(self, name, parent=None, **kwargs):
         assert isinstance(name, str)
@@ -64,12 +59,17 @@ def hashFile(givenFile):
     h  = hashlib.sha256()
     b  = bytearray(128*1024)
     mv = memoryview(b)
-    try:
-        with open(givenFile, 'rb', buffering=0) as f:
-            for n in iter(lambda : f.readinto(mv), 0):
-                h.update(mv[:n])
-    except:
-        return "permission_denied"
+    if os.path.isdir(givenFile):
+        return "folder"
+    elif os.path.isfile(givenFile):
+        try:
+            with open(givenFile, 'rb', buffering=0) as f:
+                for n in iter(lambda : f.readinto(mv), 0):
+                    h.update(mv[:n])
+        except:
+            return "permission_denied"
+    else:
+        raise Exception("{} does not exist".format(givenFile))
     return h.hexdigest()
 
 def compareFiles(file1, file2):
@@ -86,14 +86,19 @@ class HashStructure(FileFolder):
 
 class AppDataStructure(HashStructure):
     def __init__(self, name, parent=None, **kwargs):
-        self.app_data_path = kwargs['app_data']
         super(AppDataStructure, self).__init__(name, parent, **kwargs)
 
     def path(self):
         if self.parent:
             return os.path.join(self.parent.path(), self.name)
         else:
-            return self.app_data_path
+            return AppDataStructure.getRimworldConfigArea()
+    @staticmethod
+    def getRimworldConfigArea():
+        roaming = os.getenv("APPDATA")
+        app_data = "\\".join(roaming.split("\\")[:-1])
+        return os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
+
 
 FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git", "rimlink.exe"]
 def generateStructure(relativePositionStart, parent=None, **kwargs):

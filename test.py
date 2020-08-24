@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from rimlink import *
+from main import clientSyncFiles
 
 import unittest
 import os
@@ -142,7 +143,7 @@ class StructureComparisonTest(unittest.TestCase):
         self.assertEqual(results['modify'], [r"Interior\deep\hihi.txt"])
         self.assertEqual(results['add'], [])  
     def test_app_data(self):
-        TOP_LOCATION = getRimworldConfigArea()
+        TOP_LOCATION = AppDataStructure.getRimworldConfigArea()
         INNER_LOCATION = os.path.join(TOP_LOCATION, "testing")
         try:
             os.mkdir(INNER_LOCATION)
@@ -156,12 +157,12 @@ class StructureComparisonTest(unittest.TestCase):
         file = open(add_inner, "w")
         file.write("testing")
         file.close()
-        base_structure = generateStructure(getRimworldConfigArea(), app_data=getRimworldConfigArea())
+        base_structure = generateStructure(AppDataStructure.getRimworldConfigArea(), app_data=AppDataStructure.getRimworldConfigArea())
 
         os.remove(add)
         os.remove(add_inner)
 
-        after_structure = generateStructure(getRimworldConfigArea(), app_data=getRimworldConfigArea())
+        after_structure = generateStructure(AppDataStructure.getRimworldConfigArea(), app_data=AppDataStructure.getRimworldConfigArea())
 
         results = compareStructures(base_structure, after_structure)
 
@@ -177,9 +178,22 @@ class StructureComparisonTest(unittest.TestCase):
     def test_different_app_data(self):
         APP_DATA_BASE = "test_files/FakeAppData1/"
         APP_DATA_DIFFERENT = "test_files/FakeAppData2/"
+
+        file_name = "different.txt"
+        file = open(os.path.join(APP_DATA_BASE, file_name), "w")
+        file.write("good")
+        file.close()
+        file = open(os.path.join(APP_DATA_DIFFERENT, file_name), "w")
+        file.write("bad")
+        file.close()
+        AppDataStructure.getRimworldConfigArea = lambda : APP_DATA_BASE
         base_structure = generateStructure(APP_DATA_BASE, app_data=APP_DATA_BASE)
+        AppDataStructure.getRimworldConfigArea = lambda : APP_DATA_DIFFERENT
         different_structure = generateStructure(APP_DATA_DIFFERENT, app_data=APP_DATA_DIFFERENT)
+        
         results = compareStructures(base_structure, different_structure)
+        self.assertEqual(results['modify'][0].path(), 'test_files/FakeAppData2/different.txt')
+        clientSyncFiles(results['delete'], results['add'], results['modify'], testing=True)
 
 
 class IsFileTest(unittest.TestCase):
@@ -196,7 +210,7 @@ class IsFileTest(unittest.TestCase):
         self.assertFalse(FileFolder("test_files\\RimworldBase\\empty").file)
 
     def test_file_indirect(self):
-        config_location = getRimworldConfigArea()
+        config_location = AppDataStructure.getRimworldConfigArea()
         parent = generateStructure(config_location, app_data=config_location)
         self.assertFalse(parent.file)
         for child in parent.children:

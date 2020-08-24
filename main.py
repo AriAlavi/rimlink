@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-import pyperclip
 import asyncio
 import re
 import os
@@ -10,7 +9,7 @@ import socket
 from shutil import rmtree
 import traceback
 
-from rimlink import generateStructure, compareStructures, getRimworldConfigArea, isAdmin
+from rimlink import generateStructure, compareStructures, AppDataStructure, isAdmin
 
 
 
@@ -29,6 +28,7 @@ def validateIP(givenIp):
     
 
 def menu(prompt, validator, useClipboard=False):
+    import pyperclip
     if useClipboard:
         input(prompt)
         result = pyperclip.paste()
@@ -58,9 +58,10 @@ def hangForever():
     while True:
         time.sleep(120)
 
-def clientSyncFiles(to_delete, to_add, to_modify):
+def clientSyncFiles(to_delete, to_add, to_modify, **kwargs):
     to_delete.extend(to_modify)
     to_add.extend(to_modify)
+    testing = kwargs.get("testing", None)
     del to_modify
     folders = []
     for delete in to_delete:
@@ -86,6 +87,9 @@ def clientSyncFiles(to_delete, to_add, to_modify):
 
     i = 0
     for file_name in to_add:
+        if testing:
+            print("Downloaded {}".format(file_name))
+            continue
         s = socket.socket()
         s.connect((IP_ADDRESS, PORT))
         Server.clientRecieveFile(s, file_name.path())
@@ -139,7 +143,7 @@ def client():
     s = socket.socket()
     s.connect((IP_ADDRESS, PORT))
     if sync_config:
-        my_config = generateStructure(getRimworldConfigArea(), app_data=getRimworldConfigArea())
+        my_config = generateStructure(AppDataStructure.getRimworldConfigArea(), app_data=AppDataStructure.getRimworldConfigArea())
         my_config_pickled = pickle.dumps(my_config)
         s.send(b"\02")
         Server.clientSendPickle(s, my_config_pickled)
@@ -281,7 +285,7 @@ class Server:
     async def run(self):
         print("Analyzing rimworld...")
         self.base_structure = generateStructure(".")
-        self.base_app_data_structure = generateStructure(getRimworldConfigArea(), app_data=getRimworldConfigArea())
+        self.base_app_data_structure = generateStructure(AppDataStructure.getRimworldConfigArea(), app_data=AppDataStructure.getRimworldConfigArea())
         print("Ready to receive connections on {}:{}".format(IP_ADDRESS, PORT))
         await asyncio.start_server(self._handle_client, IP_ADDRESS, PORT)
 
