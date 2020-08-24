@@ -271,6 +271,8 @@ class Server:
             await BYTE_MAP[what_you_want](r, w)
         except ConnectionResetError:
             pass
+        except KeyError:
+            pass
 
     async def run(self):
         print("Analyzing rimworld...")
@@ -298,6 +300,9 @@ def main():
         ip_prompt = "your"
     else:
         ip_prompt ="the host's"
+        if "Program Files" in os.getcwd() and not isAdmin():
+            print("You must run in administrator mode")
+            hangForever()
     IP_ADDRESS = menu("Please copy {} ip address into your clipboard and press enter".format(ip_prompt), validateIP, True)
     if host == "y":
         return server()
