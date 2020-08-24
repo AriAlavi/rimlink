@@ -70,8 +70,10 @@ def clientSyncFiles(to_delete, to_add, to_modify):
             os.remove(delete.relativePath())
     folders.sort(reverse=True, key=lambda x: x.relativePath().count("\\"))
     for folder in folders:
-        print("folder", folder)
-        rmtree(folder.relativePath())
+        try:
+            rmtree(folder.relativePath())
+        except:
+            print("Failed to delete {} for some reason".format(folder.relativePath()))
 
     folders = []
     for add in to_add:
