@@ -1,5 +1,6 @@
 # Rimlink
 
+---
 ## Update 2020-12-21
 * Added functionality to skip admin requirement via commandline argument `--noadmin` for users that have saved their game file outside of protected directories
 * Added functionality to allow users to add a commandline parameter to specify custom save location via `--savedatafolder "folderpath"`
@@ -14,7 +15,7 @@ To run rimlink from a custom saved location, you should start via command line a
 ```
 rimlink.exe --noadmin --savedatafolder "your path here wrapped in doublequotes"
 ```
-
+---
 
 The purpose of this utility is to sync rimworld mods, updates, and config folders between a host and multiple users. This will help with reduce the frequency of desyncs when using the multiplayer mod. It only works for Windows as I do not have access to a Mac.
 
