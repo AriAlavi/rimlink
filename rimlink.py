@@ -8,7 +8,7 @@ from filecmp import cmp
 SCRIPT_LOCATION = ""
 
 
-def isAdmin(cmdLine=None):
+def isAdmin(cmdLine=[]):
     if not '--noadmin' in cmdLine:
         try:
             is_admin = (os.getuid() == 0)
@@ -97,14 +97,15 @@ class AppDataStructure(HashStructure):
         else:
             return AppDataStructure.getRimworldConfigArea()
     @staticmethod
-    def getRimworldConfigArea(cmdLine=None):
+    def getRimworldConfigArea(cmdLine=[]):
         if not '--savedatafolder' in cmdLine:
             roaming = os.getenv("APPDATA")
             app_data = "\\".join(roaming.split("\\")[:-1])
-            return os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
+            save_location = os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
         else:
-            pass
-#TODO: add this in            
+            save_location = sys.argv[sys.argv.index("--savedatafolder")+1].replace('"','')
+        return save_location
+            
             
 
 
