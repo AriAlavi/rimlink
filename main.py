@@ -4,6 +4,7 @@ import asyncio
 import re
 import os
 import time
+import sys # for sys.argv command line arguments
 import pickle
 import socket
 from shutil import rmtree
@@ -123,7 +124,7 @@ def automaticSync(packets):
 def client():
     sync_config = menu("Do you want to sync config files as well? \n(y)es\n(n)o", yesNoValidator)
     if sync_config == "y":
-        if not isAdmin():
+        if not isAdmin(sys.argv):
             print("In order to sync config files the program must be run with administrator privileges.")
             hangForever()
         sync_config = True
@@ -311,7 +312,7 @@ def main():
     if not requireRimworldFolder():
         print("You must put this file into the top directory of the rimworld folder")
         hangForever()
-    if not isAdmin():
+    if not isAdmin(sys.argv):
         print("You must run in administrator mode")
         hangForever()
     host = menu("Are you hosting the rimworld server?\n(y)es\n(n)o", yesNoValidator)
