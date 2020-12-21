@@ -8,11 +8,15 @@ from filecmp import cmp
 SCRIPT_LOCATION = ""
 
 
-def isAdmin():
-    try:
-        is_admin = (os.getuid() == 0)
-    except AttributeError:
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+def isAdmin(cmdLine=None):
+    if not cmdLine:
+        try:
+            is_admin = (os.getuid() == 0)
+        except AttributeError:
+            is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+    else:
+        if '--noadmin' in cmdLine:
+            is_admin = True
     return is_admin
 
 class FileFolder:
