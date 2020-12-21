@@ -9,14 +9,13 @@ SCRIPT_LOCATION = ""
 
 
 def isAdmin(cmdLine=None):
-    if not cmdLine:
+    if not '--noadmin' in cmdLine:
         try:
             is_admin = (os.getuid() == 0)
         except AttributeError:
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
     else:
-        if '--noadmin' in cmdLine:
-            is_admin = True
+        is_admin = True
     return is_admin
 
 class FileFolder:
@@ -98,10 +97,15 @@ class AppDataStructure(HashStructure):
         else:
             return AppDataStructure.getRimworldConfigArea()
     @staticmethod
-    def getRimworldConfigArea():
-        roaming = os.getenv("APPDATA")
-        app_data = "\\".join(roaming.split("\\")[:-1])
-        return os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
+    def getRimworldConfigArea(cmdLine=None):
+        if not '--savedatafolder' in cmdLine:
+            roaming = os.getenv("APPDATA")
+            app_data = "\\".join(roaming.split("\\")[:-1])
+            return os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
+        else:
+            pass
+#TODO: add this in            
+            
 
 
 FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git", "rimlink.exe"]
