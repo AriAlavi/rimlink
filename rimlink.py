@@ -8,11 +8,14 @@ from filecmp import cmp
 SCRIPT_LOCATION = ""
 
 
-def isAdmin():
-    try:
-        is_admin = (os.getuid() == 0)
-    except AttributeError:
-        is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+def isAdmin(cmdLine=[]):
+    if not '--noadmin' in cmdLine:
+        try:
+            is_admin = (os.getuid() == 0)
+        except AttributeError:
+            is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+    else:
+        is_admin = True
     return is_admin
 
 class FileFolder:
@@ -94,10 +97,16 @@ class AppDataStructure(HashStructure):
         else:
             return AppDataStructure.getRimworldConfigArea()
     @staticmethod
-    def getRimworldConfigArea():
-        roaming = os.getenv("APPDATA")
-        app_data = "\\".join(roaming.split("\\")[:-1])
-        return os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
+    def getRimworldConfigArea(cmdLine=[]):
+        if not '--savedatafolder' in cmdLine:
+            roaming = os.getenv("APPDATA")
+            app_data = "\\".join(roaming.split("\\")[:-1])
+            save_location = os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
+        else:
+            save_location = sys.argv[sys.argv.index("--savedatafolder")+1].replace('"','')
+        return save_location
+            
+            
 
 
 FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git", "rimlink.exe"]
