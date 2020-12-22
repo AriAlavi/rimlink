@@ -65,6 +65,9 @@ class StructureGenerationTest(unittest.TestCase):
         self.assertNotEqual(baseHead.path(), differentHead.path())
     def test_different_head_deeper(self):
         FILE_LOCATION = "test_files/RimworldBase/"
+        if not os.path.exists(os.path.join(os.path.join(FILE_LOCATION, "Interior"), "empty")):
+            os.mkdir(os.path.join(os.path.join(FILE_LOCATION, "Interior"), "empty"))
+
         baseHead = generateStructure(".")
         differentHead = generateStructure(FILE_LOCATION)
         self.assertNotEqual(baseHead.path(), differentHead.path())
@@ -84,7 +87,9 @@ class StructureGenerationTest(unittest.TestCase):
 
 class StructureComparisonTest(unittest.TestCase):
     FILE_LOCATION = "test_files/"
-    BASE_FOLDER = FILE_LOCATION + "RimworldBase/"
+    BASE_FOLDER = os.path.join(FILE_LOCATION, "RimworldBase")
+    if not os.path.exists(os.path.join(os.path.join(BASE_FOLDER, "Interior"), "empty")):
+        os.mkdir(os.path.join(os.path.join(BASE_FOLDER, "Interior"), "empty"))
     BASE_HEAD = generateStructure(BASE_FOLDER)
     def getResults(self, other_location):
         otherHead = generateStructure(os.path.join(self.FILE_LOCATION, other_location))
@@ -96,18 +101,26 @@ class StructureComparisonTest(unittest.TestCase):
         }
     def test_same_contents(self):
         OTHER_LOCATION = "RimworldBaseCopy/"
+        if not os.path.exists(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty")):
+            os.mkdir(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty"))
         results = self.getResults(OTHER_LOCATION)
         self.assertEqual(results['delete'], [])
         self.assertEqual(results['modify'], [])
         self.assertEqual(results['add'], [])
     def test_missing_bye(self):
         OTHER_LOCATION = "RimworldMissingBye/"
+        if not os.path.exists(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty")):
+            os.mkdir(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty"))
         results = self.getResults(OTHER_LOCATION)
         self.assertEqual(results['delete'], [])
         self.assertEqual(results['modify'], [])
         self.assertEqual(results['add'], ["bye.py"])
     def test_missing_deep(self):
         OTHER_LOCATION = "RimworldMissingDeep/"
+        if not os.path.exists(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty")):
+            os.mkdir(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty"))
+        if not os.path.exists(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "deep")):
+            os.mkdir(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "deep"))
         results = self.getResults(OTHER_LOCATION)
         self.assertEqual(results['delete'], [])
         self.assertEqual(results['modify'], [])
@@ -126,18 +139,24 @@ class StructureComparisonTest(unittest.TestCase):
         self.assertEqual(results['add'], ["hi.txt", "Interior", r"Interior\deep", r"Interior\deep\hihi.txt", r"Interior\empty", r"Interior\hihi.txt"])
     def test_extra_file(self):
         OTHER_LOCATION = "RimworldExtraGoodbye/"
+        if not os.path.exists(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty")):
+            os.mkdir(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty"))
         results = self.getResults(OTHER_LOCATION)
         self.assertEqual(results['delete'], ["goodbye.txt"])
         self.assertEqual(results['modify'], [])
         self.assertEqual(results['add'], [])  
     def test_different_file(self):
         OTHER_LOCATION = "RimworldDifferentHi/"
+        if not os.path.exists(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty")):
+            os.mkdir(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty"))
         results = self.getResults(OTHER_LOCATION)
         self.assertEqual(results['delete'], [])
         self.assertEqual(results['modify'], ["hi.txt"])
         self.assertEqual(results['add'], [])   
     def test_different_deep(self):
         OTHER_LOCATION = "RimworldDifferentDeep/"
+        if not os.path.exists(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty")):
+            os.mkdir(os.path.join(os.path.join("test_files", os.path.join(OTHER_LOCATION, "Interior")), "empty"))
         results = self.getResults(OTHER_LOCATION)
         self.assertEqual(results['delete'], [])
         self.assertEqual(results['modify'], [r"Interior\deep\hihi.txt"])
@@ -178,6 +197,10 @@ class StructureComparisonTest(unittest.TestCase):
     def test_different_app_data(self):
         APP_DATA_BASE = "test_files/FakeAppData1/"
         APP_DATA_DIFFERENT = "test_files/FakeAppData2/"
+        if not os.path.exists(APP_DATA_DIFFERENT):
+            os.mkdir(APP_DATA_DIFFERENT)
+        if not os.path.exists(os.path.join(APP_DATA_BASE, "Saves")):
+            os.mkdir(os.path.join(APP_DATA_BASE, "Saves"))
 
         file_name = "different.txt"
         file = open(os.path.join(APP_DATA_BASE, file_name), "w")
