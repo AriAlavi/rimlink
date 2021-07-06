@@ -23,7 +23,7 @@ class FileFolder:
         self.parent = None
         if parent:
             parent.setChild(self)
-        if os.path.isfile(self.path()):
+        if kwargs.get("isfile", os.path.isfile(self.path())):
             self.file = True
         else:
             self.file = False
@@ -140,9 +140,9 @@ class StructureBuilder:
                 if file_name in FILE_EXCEPTIONS:
                     continue
                 file_name_path = os.path.join(self.start, file_name)
-                isDir = os.path.isdir(file_name_path)
-                newStructure = self.structureType(file_name, self.parent, app_data=self.appData) # TODO feed in isDir to speed up execution
-                if isDir:
+                isfile = os.path.isfile(file_name_path)
+                newStructure = self.structureType(file_name, self.parent, app_data=self.appData, isfile=isfile)
+                if not isfile:
                     listdir = os.listdir(file_name_path)
                     if len(listdir) <= 1:
                         self.mainBuilder.SubstructureBuilder(file_name_path, self.mainBuilder, newStructure, listdir=listdir).execute()
@@ -185,7 +185,7 @@ class StructureBuilder:
             if self.TO_COMPLETE.qsize() == 0:
                 if all(thread.waiting for thread in EXEUCTOR_QUEUES):
                     break
-            time.sleep(.001)
+            time.sleep(.01)
 
         for _ in range(self.MAX_THREADS):
             self.TO_COMPLETE.put(None)
@@ -194,7 +194,6 @@ class StructureBuilder:
 
 
 def generateStructure(relativePositionStart, parent=None, **kwargs):
-
     builder = StructureBuilder(relativePositionStart, parent, **kwargs)
     return builder.run()
 
