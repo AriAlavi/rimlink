@@ -104,6 +104,7 @@ FILE_EXCEPTIONS = {"__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs"
 
 from threading import Thread
 from queue import Queue
+import time
 
 
 class StructureBuilder:
@@ -111,7 +112,7 @@ class StructureBuilder:
         self.relativePositionStart = relativePositionStart
         self.parent = parent
         self.app_data = kwargs.get("app_data", False)
-        self.MAX_THREADS = os.cpu_count() or 8
+        self.MAX_THREADS = os.cpu_count() - 2 or 2
         self.TO_COMPLETE = Queue()
         if self.app_data:
             self.structureType = AppDataStructure
@@ -120,11 +121,12 @@ class StructureBuilder:
 
 
     class SubstructureBuilder:
-        def __init__(self, start, mainBuilder, parent):
+        def __init__(self, start, mainBuilder, parent, **kwargs):
             assert isinstance(mainBuilder, StructureBuilder)
             self.start = start
             self.mainBuilder = mainBuilder
             self.parent = parent
+            self.listdir = kwargs.get("listdir", None)
 
         @property
         def appData(self):
@@ -134,21 +136,34 @@ class StructureBuilder:
             return self.mainBuilder.structureType
 
         def execute(self):
-            for file_name in os.listdir(self.start):
+            for file_name in self.listdir or os.listdir(self.start):
                 if file_name in FILE_EXCEPTIONS:
                     continue
                 file_name_path = os.path.join(self.start, file_name)
                 isDir = os.path.isdir(file_name_path)
                 newStructure = self.structureType(file_name, self.parent, app_data=self.appData) # TODO feed in isDir to speed up execution
                 if isDir:
-                    self.mainBuilder.generateSubstructure(file_name_path, newStructure)
+                    listdir = os.listdir(file_name_path)
+                    if len(listdir) <= 1:
+                        self.mainBuilder.SubstructureBuilder(file_name_path, self.mainBuilder, newStructure, listdir=listdir).execute()
+                    else:
+                        self.mainBuilder.generateSubstructure(file_name_path, newStructure)
 
-    class StructureExecutor:
+    class StructureExecutor(Thread):
         def __init__(self, todoQ):
             self.todoQ = todoQ
+            self.waiting = True
+            super(StructureBuilder.StructureExecutor, self).__init__()
+
         def run(self):
-            substructureBuilder = self.todoQ.get()
-            substructureBuilder.execute()
+            while True:
+                self.waiting = True
+                substructureBuilder = self.todoQ.get()
+                self.waiting = False
+                if not substructureBuilder:
+                    return
+                substructureBuilder.execute()
+
                 
    
     def generateSubstructure(self, file_name_path, parent=None):
@@ -160,10 +175,20 @@ class StructureBuilder:
         if not self.parent:
             self.parent = self.structureType(self.relativePositionStart, None, app_data=self.app_data)
         self.generateSubstructure(self.relativePositionStart)
-        executor = self.StructureExecutor(self.TO_COMPLETE)
-        while self.TO_COMPLETE.qsize():
-            executor.run()
+        EXEUCTOR_QUEUES = []
+        for _ in range(self.MAX_THREADS):
+            EXEUCTOR_QUEUES.append(self.StructureExecutor(self.TO_COMPLETE))
+        for x in EXEUCTOR_QUEUES:
+            x.start()
 
+        while True:
+            if self.TO_COMPLETE.qsize() == 0:
+                if all(thread.waiting for thread in EXEUCTOR_QUEUES):
+                    break
+            time.sleep(.001)
+
+        for _ in range(self.MAX_THREADS):
+            self.TO_COMPLETE.put(None)
         # self.TO_COMPLETE.join()
         return self.parent
 
@@ -172,25 +197,6 @@ def generateStructure(relativePositionStart, parent=None, **kwargs):
 
     builder = StructureBuilder(relativePositionStart, parent, **kwargs)
     return builder.run()
-    # app_data = kwargs.get("app_data", False)
-    # if app_data:
-    #     StructureType = AppDataStructure
-    # else:
-    #     StructureType = HashStructure
-    # if not parent:
-    #     parent = StructureType(relativePositionStart, None, app_data=app_data)
-    # assert isinstance(relativePositionStart, str)
-    # assert isinstance(parent, FileFolder)
-    # for file_name in os.listdir(relativePositionStart):
-    #     if file_name in FILE_EXCEPTIONS:
-    #         continue
-    #     file_name_path = os.path.join(relativePositionStart, file_name)
-    #     if not(os.path.isfile(file_name_path) or os.path.isdir(file_name_path)):
-    #         continue
-    #     file_folder = StructureType(file_name, parent, app_data=app_data)
-    #     if os.path.isdir(os.path.join(relativePositionStart, file_name)):
-    #         generateStructure(os.path.join(relativePositionStart, file_name), file_folder)
-    # return parent
 
 def getAllChildren(structure): # Includes the structure which initially calls the function as well
     assert isinstance(structure, FileFolder)
