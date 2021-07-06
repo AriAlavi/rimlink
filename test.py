@@ -196,7 +196,6 @@ class StructureComparisonTest(unittest.TestCase):
         to_download = clientSyncFiles(results['delete'], results['add'], results['modify'], testing=True)
         self.assertEqual(to_download[0].relativePath(), "different.txt")
 
-
 class IsFileTest(unittest.TestCase):
     def test_is_file(self):
         self.assertTrue(FileFolder("test_files\\dll_case.dll").file)
@@ -219,5 +218,52 @@ class IsFileTest(unittest.TestCase):
                 self.assertFalse(child.file)
             elif "Player.log" in child.name:
                 self.assertTrue(child.file)
+
+class SpeedTests(unittest.TestCase):
+    def test_speed_of_generate_tree_and_compare_tree(self):
+        from shutil import rmtree
+        from random import randint, choice
+        from string import ascii_letters
+        from statistics import mean
+        import time
+        LOCATION = "test_files/SpeedTest1/"
+        LOCATION2 = "test_files/SpeedTest2/"
+        ALREADY_DONE = False
+        try:
+            os.mkdir("test_files/SpeedTest1")
+            os.mkdir("test_files/SpeedTest2")
+        except FileExistsError:
+            ALREADY_DONE = True
+
+        def createSpeedtest(location):
+            for x in range(30):
+                newFolder = os.path.join(location, str(x))
+                try:
+                    os.mkdir(newFolder)
+                except FileExistsError:
+                    pass
+                for i in range(randint(0, 20)):
+                    fileName = os.path.join(newFolder, "{}.txt".format(i))
+                    TEXT = "".join(ascii_letters for i in range(randint(0, 10) ** randint(1, 7)))
+                    file = open(fileName, "w")
+                    file.write(TEXT)
+                    file.close()
+            
+        if not ALREADY_DONE:
+            print("\nMust create speed test tree. This will take some time. This only needs to be ran once.")
+            createSpeedtest(LOCATION)
+            print(r"50% done creating tree")
+            createSpeedtest(LOCATION2)
+
+        TRAIL_COUNT = 5
+        RESULTS = []
+        for _ in range(TRAIL_COUNT):
+            t0 = time.time()
+            base_structure = generateStructure(LOCATION)
+            other_structure = generateStructure(LOCATION2)
+            compareStructures(base_structure, other_structure)
+            RESULTS.append(time.time()-t0)
+        print("\n{} seconds on the speedtest".format(mean(RESULTS)))
+
 if __name__ == '__main__':
     unittest.main()
