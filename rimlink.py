@@ -100,7 +100,7 @@ class AppDataStructure(HashStructure):
         return os.path.join(os.path.join(os.path.join(app_data, "LocalLow"), "Ludeon Studios"), "RimWorld by Ludeon Studios")
 
 
-FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git", "rimlink.exe"]
+FILE_EXCEPTIONS = ["__pycache__", "Saves", "Scenarios", "MpReplays", "MpDesyncs", "Player.log", "Player-prev.log", ".gitignore", ".git", "rimlink.exe", "MonoBleedingEdge"]
 def generateStructure(relativePositionStart, parent=None, **kwargs):
     app_data = kwargs.get("app_data", False)
     if app_data:
